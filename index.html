@@ -14,7 +14,8 @@
 
   <header class="hud">
     <div class="h-izq">
-      <span class="h-titulo" id="hNivel">1/5</span>
+      <span class="h-zona" id="hZona">Cuevas</span>
+      <span class="h-titulo" id="hNivel">1/20</span>
       <div class="habilidades" id="habilidades"></div>
     </div>
     <div class="h-der">
@@ -33,18 +34,19 @@
     <div class="capa" id="menu" hidden>
       <div class="caja">
         <h1>Salto</h1>
-        <p class="lema">Cinco niveles. Seis formas de moverte. Vas a morir mucho, y eso está bien: reapareces en un tercio de segundo.</p>
+        <p class="lema">Veinte niveles en cinco zonas. Vas a morir mucho, y eso está bien: reapareces en un tercio de segundo.</p>
+        <p class="progreso" id="progreso"></p>
 
         <div class="controles">
           <div><kbd>←</kbd><kbd>→</kbd><span>moverte</span></div>
           <div><kbd>Espacio</kbd><span>saltar · suéltalo antes para saltar menos · mantenlo al caer para planear</span></div>
           <div><kbd>X</kbd><span>dash hacia donde estés pulsando</span></div>
           <div><kbd>C</kbd><span>gancho (mantén pulsado) · <kbd>↑</kbd><kbd>↓</kbd> recogen y sueltan cuerda</span></div>
-          <div><kbd>R</kbd><span>reiniciar · <kbd>Esc</kbd> menú</span></div>
+          <div><kbd>R</kbd><span>reiniciar el nivel · <kbd>Esc</kbd> menú</span></div>
         </div>
 
+        <button type="button" class="btn-grande" id="btnEmpezar">Seguir donde lo dejaste</button>
         <div class="lista-niveles" id="listaNiveles"></div>
-        <button type="button" class="btn-grande" id="btnEmpezar">Empezar por el principio</button>
       </div>
     </div>
 
@@ -64,8 +66,9 @@
 
 <section class="notas">
   <p>
-    <b>Cinco niveles.</b> Cada uno te da un movimiento nuevo: saltar, dash, paredes, planeo y gancho.
-    El último los pide todos.
+    <b>Veinte niveles en cinco zonas.</b> Primero aprendes los movimientos —saltar, dash, paredes,
+    planeo y gancho— y luego el escenario se complica: plataformas que se mueven, suelo que cede,
+    muelles, corrientes de aire, cintas y bloques que se encienden y apagan.
   </p>
   <p>
     <b>Morir no castiga:</b> reapareces en un tercio de segundo. Vas a morir mucho y da igual.

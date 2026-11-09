@@ -83,20 +83,31 @@ kbd{
 .controles > div{display:flex;align-items:baseline;gap:7px;flex-wrap:wrap;font-size:.76rem;color:var(--txt-2)}
 .controles span{color:var(--txt-3)}
 
-.lista-niveles{display:grid;gap:6px;margin-bottom:16px}
+.progreso{font-size:.74rem;color:var(--txt-3);margin:-10px 0 18px;font-variant-numeric:tabular-nums}
+
+.lista-niveles{display:grid;gap:12px;margin-top:18px;text-align:left}
+.zona{border:1px solid var(--borde);border-left:3px solid var(--zc);border-radius:10px;padding:10px 12px;background:var(--sup)}
+.zona-cab{display:flex;align-items:baseline;gap:9px;margin-bottom:8px}
+.zona-n{font-size:.68rem;font-weight:800;color:var(--zc)}
+.zona-t{font-size:.86rem;font-weight:700}
+.zona-l{font-size:.7rem;color:var(--txt-3)}
+.zona-niv{display:grid;grid-template-columns:repeat(auto-fit,minmax(132px,1fr));gap:6px}
 .niv{
-  display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:12px;
-  font:inherit;text-align:left;padding:9px 12px;border-radius:9px;cursor:pointer;
-  background:var(--sup);border:1px solid var(--borde);color:var(--txt);
+  display:flex;flex-direction:column;gap:2px;
+  font:inherit;text-align:left;padding:7px 10px;border-radius:8px;cursor:pointer;
+  background:var(--sup-2);border:1px solid var(--borde);color:var(--txt-2);
 }
-.niv:hover{background:var(--sup-2);border-color:var(--acento)}
-.niv:focus-visible{outline:2px solid var(--acento);outline-offset:2px}
-.niv-n{
-  font-size:.74rem;font-weight:800;color:var(--acento);
-  border:1px solid var(--borde);border-radius:6px;text-align:center;padding:2px 0;
+.niv:hover{border-color:var(--zc);color:var(--txt)}
+.niv:focus-visible{outline:2px solid var(--zc);outline-offset:2px}
+.niv.hecho{color:var(--txt)}
+.niv.hecho .niv-t::before{content:'✓ ';color:var(--zc);font-weight:800}
+.niv-t{font-size:.78rem;font-weight:620}
+.niv-m{font-size:.66rem;color:var(--txt-3);font-variant-numeric:tabular-nums}
+
+.h-zona{
+  font-size:.6rem;font-weight:800;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--zona,var(--acento));
 }
-.niv-t{font-size:.88rem;font-weight:620}
-.niv-m{font-size:.7rem;color:var(--txt-3);font-variant-numeric:tabular-nums}
 
 .btn-grande{
   font:inherit;font-size:.92rem;font-weight:700;width:100%;padding:13px;
