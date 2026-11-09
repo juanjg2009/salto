@@ -40,7 +40,7 @@ const J = {
   camara: { x: 0, y: 0 }, particulas: [], fantasmas: [],
   temblor: 0, congelacion: 0, destello: 0,
   muertes: 0, tiempo: 0, estado: 'menu', tMuerte: 0, tFin: 0,
-  mejores: {}, ctx: null, audio: null,
+  mejores: {}, platanos: {}, ctx: null, audio: null,
   faseAlterna: 0, tAlterna: 0, decor: null, aparicion: null
 };
 
@@ -94,6 +94,7 @@ function crearAudio() {
     cruje: () => chas(420, 0.16, 0.22, 0.6),
     control: () => [0, 7].forEach((s, i) => setTimeout(() => tono(660 * Math.pow(2, s / 12), 660 * Math.pow(2, s / 12), 0.16, 'sine', 0.26), i * 90)),
     alterna: () => tono(520, 380, 0.07, 'square', 0.1),
+    platano: () => [0, 7, 12].forEach((d, i) => setTimeout(() => tono(784 * Math.pow(2, d / 12), 784 * Math.pow(2, d / 12), 0.14, 'triangle', 0.26), i * 70)),
     meta: () => [0, 4, 7, 12].forEach((s, i) => setTimeout(() => tono(523 * Math.pow(2, s / 12), 523 * Math.pow(2, s / 12), 0.22, 'triangle', 0.3), i * 85))
   };
 }
@@ -332,7 +333,10 @@ function actualizarJugador(dt) {
         rebote = true;
         const mu = N.muelles.find((m) => m.cy * N.ancho + m.cx === cel);
         if (mu) mu.t = 0.35;
-        p.vy = -F.muelleV; p.suelo = false; p.saltando = true; p.dashes = 1;
+        /* saltando = false a propósito: con true, al no tener el botón de salto
+           pulsado se aplica la gravedad de corte (3300) y el muelle se queda en
+           3,6 casillas en vez de 8. El muelle no es un salto tuyo: no se recorta. */
+        p.vy = -F.muelleV; p.suelo = false; p.saltando = false; p.dashes = 1;
         p.aplasta = 0.6; p.estira = 1.5;
         J.temblor = Math.max(J.temblor, 5);
         sonar('muelle');
@@ -396,6 +400,19 @@ function actualizarJugador(dt) {
       c.tomado = true; c.recarga = 2.2; p.dashes = 1;
       sonar('cristal'); J.temblor = Math.max(J.temblor, 3);
       for (let i = 0; i < 12; i++) polvo(c.x, c.y, (Math.random() - 0.5) * 200, (Math.random() - 0.5) * 200, 2, N.paleta.acento2);
+    }
+  }
+
+  for (const b of N.platanos) {
+    if (b.tomado) continue;
+    if (Math.hypot(b.x - p.x, b.y - p.y) < 22) {
+      b.tomado = true;
+      J.platanos[J.iNivel] = true;
+      guardar();
+      sonar('platano'); J.temblor = Math.max(J.temblor, 3);
+      for (let i = 0; i < 20; i++)
+        polvo(b.x, b.y, (Math.random() - 0.5) * 220, -Math.random() * 200, 2.5, '#ffd43b');
+      actualizarHUD();
     }
   }
 
@@ -549,7 +566,10 @@ function completar() {
   } else { J.mejores[J.iNivel].hecho = true; guardar(); }
 }
 function guardar() {
-  try { localStorage.setItem('salto-mejores-v2', JSON.stringify(J.mejores)); } catch (e) {}
+  try {
+    localStorage.setItem('salto-mejores-v2', JSON.stringify(J.mejores));
+    localStorage.setItem('salto-platanos-v1', JSON.stringify(J.platanos));
+  } catch (e) {}
 }
 
 /* ============================================================
@@ -800,6 +820,36 @@ function dibujar() {
     if (c.tomado) { g.fillStyle = P.acento; g.fill(); } else g.stroke();
   }
 
+  /* --- el plátano --- */
+  for (const b of N.platanos) {
+    const bal = Math.sin(J.tiempo * 2.2 + b.cx) * 2.5;
+    g.save(); g.translate(b.x, b.y + bal);
+    if (b.tomado) {
+      g.globalAlpha = 0.18; g.strokeStyle = '#ffd43b'; g.lineWidth = 1.5;
+      g.beginPath(); g.arc(0, 0, 8, 0, Math.PI * 2); g.stroke();
+      g.restore(); g.globalAlpha = 1; continue;
+    }
+    /* el brillo amarillo */
+    g.save(); g.globalCompositeOperation = 'lighter';
+    const gb = g.createRadialGradient(0, 0, 1, 0, 0, 34);
+    gb.addColorStop(0, 'rgba(255,212,59,.75)'); gb.addColorStop(0.45, 'rgba(255,170,30,.22)');
+    gb.addColorStop(1, 'rgba(255,170,30,0)');
+    g.fillStyle = gb; g.fillRect(-34, -34, 68, 68);
+    g.restore();
+    /* la media luna de la fruta */
+    g.rotate(-0.35 + Math.sin(J.tiempo * 2.2 + b.cx) * 0.06);
+    g.fillStyle = '#ffd43b';
+    g.beginPath();
+    g.moveTo(-7, -7);
+    g.quadraticCurveTo(9, -3, 7, 9);
+    g.quadraticCurveTo(0, 5, -4, -4);
+    g.closePath(); g.fill();
+    g.strokeStyle = '#8a5a12'; g.lineWidth = 2; g.lineCap = 'round';
+    g.beginPath(); g.moveTo(-7, -7); g.lineTo(-9, -11); g.stroke();
+    g.beginPath(); g.moveTo(7, 9); g.lineTo(8.5, 12); g.stroke();
+    g.restore();
+  }
+
   /* --- la salida --- */
   const s = N.salida;
   g.save(); g.globalCompositeOperation = 'lighter';
@@ -927,6 +977,7 @@ function actualizarHUD() {
   $('#hMuertes').textContent = J.muertes;
   const m = J.mejores[J.iNivel];
   $('#hMejor').textContent = m && m.tiempo ? reloj(m.tiempo) : '—';
+  $('#hPlatanos').textContent = `${Object.keys(J.platanos).length}/${NIVELES.length}`;
   $('#pista').textContent = N.pista;
   document.body.style.setProperty('--zona', ZONAS[N.zona].acento);
 }
@@ -941,6 +992,7 @@ function cargarNivel(i) {
   J.faseAlterna = 0; J.tAlterna = 0;
   J.aparicion = null;
   J.nivel.controles.forEach((c) => (c.tomado = false));
+  J.nivel.platanos.forEach((b) => (b.tomado = !!J.platanos[i]));
   reaparecer();
   actualizarCamara(0, true);
   actualizarHUD();
@@ -960,7 +1012,8 @@ function pintarHabilidades() {
 function abrirMenu() {
   $('#menu').hidden = false;
   const hechos = Object.keys(J.mejores).length;
-  $('#progreso').textContent = `${hechos} de ${NIVELES.length} superados`;
+  $('#progreso').textContent =
+    `${hechos} de ${NIVELES.length} superados · ${Object.keys(J.platanos).length} de ${NIVELES.length} plátanos`;
   $('#listaNiveles').innerHTML = ZONAS.map((z, iz) => {
     const niv = NIVELES.map((n, i) => ({ n, i })).filter((o) => o.n.zona === iz);
     return `<div class="zona" style="--zc:${z.acento}">
@@ -968,8 +1021,9 @@ function abrirMenu() {
         <span class="zona-t">${z.nombre}</span><span class="zona-l">${z.lema}</span></div>
       <div class="zona-niv">${niv.map(({ n, i }) => {
         const m = J.mejores[i];
+        const pl = J.platanos[i] ? '<i class="pl">●</i>' : '';
         return `<button type="button" class="niv ${m ? 'hecho' : ''}" data-nivel="${i}">
-          <span class="niv-t">${n.nombre}</span>
+          <span class="niv-t">${n.nombre}${pl}</span>
           <span class="niv-m">${m && m.tiempo ? reloj(m.tiempo) + ' · ' + m.muertes + '†' : '—'}</span></button>`;
       }).join('')}</div></div>`;
   }).join('');
@@ -1027,10 +1081,38 @@ function mostrarFin() {
   if (!$('#fin').hidden) return;
   const ultimo = J.iNivel >= NIVELES.length - 1;
   $('#finTitulo').textContent = ultimo ? '¡Te los has pasado todos!' : '¡Nivel superado!';
-  $('#finDatos').innerHTML = `<span><b>${reloj(J.tiempo)}</b>tiempo</span><span><b>${J.muertes}</b>muertes</span>`;
+  $('#finDatos').innerHTML = `<span><b>${reloj(J.tiempo)}</b>tiempo</span>`
+    + `<span><b>${J.muertes}</b>muertes</span>`
+    + `<span><b class="${J.platanos[J.iNivel] ? 'si' : 'no'}">${J.platanos[J.iNivel] ? '●' : '—'}</b>plátano</span>`;
   $('#btnSiguiente').textContent = ultimo ? 'Volver al menú' : 'Siguiente →';
   $('#btnSiguiente').onclick = () => (ultimo ? abrirMenu() : cargarNivel(J.iNivel + 1));
   $('#fin').hidden = false;
+}
+
+/* ============================================================
+   PANTALLA COMPLETA Y SALTAR NIVEL
+   ============================================================ */
+/* Pantalla completa de verdad si el navegador deja; si no (dentro de un
+   panel incrustado la API se niega con "Permissions check failed"), el
+   respaldo es estirar la pantalla a toda la ventana con CSS. */
+function pantallaCompleta() {
+  const caja = $('.pantalla');
+  if (document.fullscreenElement) { document.exitFullscreen(); return; }
+  if (document.body.classList.contains('inmersivo')) { modoInmersivo(false); return; }
+  const pedir = caja.requestFullscreen || caja.webkitRequestFullscreen;
+  if (!pedir) { modoInmersivo(true); return; }
+  try {
+    Promise.resolve(pedir.call(caja)).catch(() => modoInmersivo(true));
+  } catch (e) { modoInmersivo(true); }
+}
+function modoInmersivo(on) {
+  document.body.classList.toggle('inmersivo', on);
+  $('#btnPantalla').textContent = on ? '⛶ Salir' : '⛶ Pantalla';
+}
+function saltarNivel() {
+  if (!J.nivel) return;
+  J.aparicion = null;
+  cargarNivel(J.iNivel >= NIVELES.length - 1 ? 0 : J.iNivel + 1);
 }
 
 /* ============================================================
@@ -1041,7 +1123,9 @@ function eventos() {
     const a = accionDe(e.key);
     if (!a) {
       if (e.key === 'r' || e.key === 'R') { if (J.nivel) { J.aparicion = null; cargarNivel(J.iNivel); } }
-      if (e.key === 'Escape') abrirMenu();
+      if (e.key === 'Escape') { if (document.body.classList.contains('inmersivo')) modoInmersivo(false); else abrirMenu(); }
+      if (e.key === 'f' || e.key === 'F') pantallaCompleta();
+      if (e.key === 'n' || e.key === 'N') saltarNivel();
       return;
     }
     e.preventDefault();
@@ -1055,6 +1139,11 @@ function eventos() {
   addEventListener('blur', () => { for (const k in T) T[k] = 0; });
 
   $('#btnMenu').addEventListener('click', abrirMenu);
+  $('#btnPantalla').addEventListener('click', pantallaCompleta);
+  addEventListener('fullscreenchange', () => {
+    $('#btnPantalla').textContent = document.fullscreenElement ? '⛶ Salir' : '⛶ Pantalla';
+  });
+  $('#btnSaltar').addEventListener('click', saltarNivel);
   $('#btnReinicio').addEventListener('click', () => { J.aparicion = null; cargarNivel(J.iNivel); });
   $('#btnEmpezar').addEventListener('click', () => {
     const sig = NIVELES.findIndex((n, i) => !J.mejores[i]);
@@ -1065,6 +1154,7 @@ function eventos() {
 (function init() {
   J.ctx = $('#lienzo').getContext('2d');
   try { J.mejores = JSON.parse(localStorage.getItem('salto-mejores-v2') || '{}'); } catch (e) { J.mejores = {}; }
+  try { J.platanos = JSON.parse(localStorage.getItem('salto-platanos-v1') || '{}'); } catch (e) { J.platanos = {}; }
   eventos();
   cargarNivel(0);
   abrirMenu();

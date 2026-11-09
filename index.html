@@ -22,7 +22,10 @@
       <div class="h-dato"><span class="h-l">Tiempo</span><span class="h-v" id="hTiempo">0:00.00</span></div>
       <div class="h-dato"><span class="h-l">Muertes</span><span class="h-v" id="hMuertes">0</span></div>
       <div class="h-dato"><span class="h-l">Récord</span><span class="h-v" id="hMejor">—</span></div>
+      <div class="h-dato h-plat"><span class="h-l">Plátanos</span><span class="h-v" id="hPlatanos">0/20</span></div>
       <button type="button" class="btn" id="btnReinicio" title="También con la tecla R">↺ Reiniciar</button>
+      <button type="button" class="btn" id="btnSaltar" title="Saltarte este nivel · tecla N">Saltar →</button>
+      <button type="button" class="btn" id="btnPantalla" title="Pantalla completa · tecla F">⛶ Pantalla</button>
       <button type="button" class="btn" id="btnMenu" title="También con Escape">Niveles</button>
     </div>
   </header>
@@ -34,7 +37,7 @@
     <div class="capa" id="menu" hidden>
       <div class="caja">
         <h1>Salto</h1>
-        <p class="lema">Veinte niveles en cinco zonas. Vas a morir mucho, y eso está bien: reapareces en un tercio de segundo.</p>
+        <p class="lema">Veinte niveles en cinco zonas, y un plátano escondido en cada uno. Vas a morir mucho, y eso está bien: reapareces en un tercio de segundo.</p>
         <p class="progreso" id="progreso"></p>
 
         <div class="controles">
@@ -43,6 +46,7 @@
           <div><kbd>X</kbd><span>dash hacia donde estés pulsando</span></div>
           <div><kbd>C</kbd><span>gancho (mantén pulsado) · <kbd>↑</kbd><kbd>↓</kbd> recogen y sueltan cuerda</span></div>
           <div><kbd>R</kbd><span>reiniciar el nivel · <kbd>Esc</kbd> menú</span></div>
+          <div><kbd>F</kbd><span>pantalla completa · <kbd>N</kbd> saltarte el nivel</span></div>
         </div>
 
         <button type="button" class="btn-grande" id="btnEmpezar">Seguir donde lo dejaste</button>
@@ -69,6 +73,10 @@
     <b>Veinte niveles en cinco zonas.</b> Primero aprendes los movimientos —saltar, dash, paredes,
     planeo y gancho— y luego el escenario se complica: plataformas que se mueven, suelo que cede,
     muelles, corrientes de aire, cintas y bloques que se encienden y apagan.
+  </p>
+  <p>
+    <b>Un plátano por nivel,</b> veinte en total. Ninguno está en el camino fácil, pero todos
+    se pueden coger: están comprobados uno a uno. Se guardan solos, aunque te mueras después.
   </p>
   <p>
     <b>Morir no castiga:</b> reapareces en un tercio de segundo. Vas a morir mucho y da igual.

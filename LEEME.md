@@ -1,7 +1,8 @@
 # Salto
 
-Plataformas 2D de precisión. Cinco niveles, seis formas de moverte, sin enemigos.
-Todo el esfuerzo está puesto en una sola cosa: que **moverse dé gusto**.
+Plataformas 2D de precisión. Veinte niveles en cinco zonas, seis formas de
+moverte, un plátano escondido en cada nivel y ningún enemigo. Todo el esfuerzo
+está puesto en una sola cosa: que **moverse dé gusto**.
 
 Doble clic en `index.html`. Sin internet, sin instalar nada, sin imágenes ni
 sonidos: todo se dibuja y se genera con código.
@@ -15,9 +16,22 @@ sonidos: todo se dibuja y se genera con código.
 | `X` o `J` | dash en la dirección que estés pulsando |
 | `C` o `K` | gancho (mantenido) · `↑` `↓` recogen y sueltan cuerda · `Espacio` te suelta con impulso |
 | `R` | reiniciar · `Esc` menú |
+| `F` | pantalla completa · `N` saltarte el nivel |
 
-Cada nivel desbloquea un movimiento nuevo, y la barra de arriba te dice cuáles
-tienes. El quinto los pide todos.
+Cada zona desbloquea un movimiento nuevo, y la barra de arriba te dice cuáles
+tienes. La última zona los pide todos.
+
+Ningún nivel está bloqueado: `Esc` abre el menú y puedes ir a cualquiera, y `N`
+te salta el que tengas delante. Si uno se te atraganta, pásalo de largo.
+
+## Los plátanos
+
+Hay **uno por nivel, veinte en total**, y ninguno está en el camino fácil: todos
+piden un desvío, una pared o un dash de más. Se guardan en cuanto los tocas,
+aunque te mueras después, y el contador de arriba lleva la cuenta.
+
+Que se puedan coger no es una suposición: el comprobador de niveles busca cada
+plátano igual que busca la salida, y los veinte dan alcanzable.
 
 ## El movimiento no es física: son trampas
 
@@ -76,20 +90,36 @@ if (d > largoCuerda) {
 }
 ```
 
-## El comprobador de niveles (y el fallo que tuvo)
+## El comprobador de niveles (y los dos fallos que tuvo)
 
 Un nivel que no se puede terminar es el peor fallo posible y se escapa mirando
 el mapa. `comprobarNivel()` recorre el nivel con un personaje **más torpe que
-el real**: salta 3 casillas (el real llega a 3,38), avanza 4 (el real 5,5) y el
-dash recorre 2 (el real 2,26). Si con eso se llega a la salida, con el
-personaje de verdad seguro que también. Solo cuenta con los movimientos
-desbloqueados en ese nivel.
+el real**: salta 3 casillas (el real llega a 3,38), cruza 5 saltando a la misma
+altura (el real 5,44) y el dash recorre 2 (el real 2,26). Si con eso se llega a
+la salida, con el personaje de verdad seguro que también. Solo cuenta con los
+movimientos desbloqueados en ese nivel.
 
-**La primera versión estaba mal.** No llevaba la cuenta de si quedaba dash, así
-que daba por bueno encadenar dashes infinitos en el aire. Con eso aprobó un
-nivel 2 que era imposible de pasar. Ahora el estado de la búsqueda incluye si
-la carga está gastada, y el dash se recarga solo al pisar suelo, tocar pared o
-coger un cristal.
+Ha estado mal dos veces, y las dos se notaron jugando antes que mirando el
+código.
+
+**Fallo 1: dashes infinitos.** No llevaba la cuenta de si quedaba dash, así que
+daba por bueno encadenarlos en el aire. Con eso aprobó un nivel 2 imposible.
+Ahora el estado de la búsqueda incluye si la carga está gastada.
+
+**Fallo 2: el planeo regalaba distancia.** Daba 4 casillas de avance por cada
+casilla que bajabas. Planeando de verdad caes a 135 px/s y corres a 195, o sea
+**1,44**. Con 4 aprobaba cualquier cosa, y así colaron los cuatro niveles de
+Las ruinas, el 9 entre ellos: pedía cruzar 56 casillas de vacío de una tirada.
+Ahora la deriva al caer sale de la física:
+
+```js
+const derivaCaida  = (h) => Math.floor(1.17 * Math.sqrt(h));  // caída libre
+const derivaPlaneo = (h) => Math.floor(1.4 * h);              // planeando
+```
+
+Y el alcance del salto depende de cuánta altura ganes, porque llegar arriba del
+todo te deja en el pico del arco: 5 casillas si aterrizas a tu misma altura, 2
+si subes 3.
 
 Para pasarlo, en la consola del navegador:
 
@@ -97,9 +127,21 @@ Para pasarlo, en la consola del navegador:
 comprobarTodos()
 ```
 
-Además hay un bot que **juega los niveles de verdad** con la física real. Los
-tres primeros los termina sin morir. Los dos últimos necesitan gancho y planeo
-y el bot no sabe usarlos: de esos solo está la comprobación del recorrido.
+Además hay un bot que **juega los niveles de verdad** con la física real:
+corre hacia la salida, salta al llegar al borde y mantiene el botón para
+planear. Termina el 4 y el 9 sin morir. Los que piden muelles, gancho o subir
+por corrientes de aire no sabe jugarlos, y de esos solo está la comprobación
+del recorrido.
+
+## El muelle que subía la mitad
+
+Medido en el navegador: el muelle lanza a 790 px/s, que son 8 casillas. Subía
+3,6. La causa es que el rebote dejaba `saltando = true`, y al no tener tú el
+botón de salto pulsado se aplicaba la gravedad de corte (3300 en vez de 1500),
+que es justo la que recorta un salto cuando sueltas pronto. El muelle no es un
+salto tuyo, así que ahora pone `saltando = false` y sube las 8 casillas
+(7,89 medidas). El salto normal se sigue recortando igual: 1,65 casillas con un
+toque, 3,38 manteniéndolo.
 
 ## Editar los niveles
 
@@ -107,24 +149,33 @@ Están en `niveles.js` escritos como dibujos de texto. Puedes cambiarlos a mano:
 
 ```
 #   suelo y paredes        *   cristal: recarga el dash en el aire
-^   pinchos (matan)        o   punto de enganche del gancho
-S   dónde apareces         .   aire
-E   la salida
+^   pinchos (matan)        o   anilla del gancho
+S   dónde apareces         P   punto de control
+E   la salida              @   el plátano del nivel
+-   plataforma horizontal  =   plataforma vertical
+x   bloque que se rompe    _   muelle
+w   corriente de aire      > <  cintas transportadoras
+A   bloque intermitente    B   el del turno contrario
 ```
 
 Las filas se rellenan solas, así que no tienen que medir todas lo mismo.
 `habilidades` decide qué sabe hacer el personaje en ese nivel.
 
+## Pantalla completa
+
+El botón pide la pantalla completa del navegador. Si el navegador se niega
+—dentro de un panel incrustado la API contesta *Permissions check failed*—, el
+respaldo estira el juego a toda la ventana con CSS, que funciona siempre.
+
 ## Lo que falta
 
-Los niveles son un **primer borrador**. Están comprobados y se pueden terminar,
-pero el diseño de niveles no se valida con un algoritmo: se valida jugando una
-y otra vez y moviendo plataformas dos casillas hasta que el salto pide
-exactamente lo que tiene que pedir. Eso está sin hacer, y se nota sobre todo
-en el 4 y el 5, que son más vacíos de lo que deberían.
+Los niveles están comprobados y se pueden terminar, pero el diseño de niveles
+no se valida con un algoritmo: se valida jugando una y otra vez y moviendo
+bloques dos casillas hasta que el salto pide exactamente lo que tiene que
+pedir. De los veinte, un bot con física real ha terminado unos pocos; el resto
+solo tiene la comprobación del recorrido.
 
 Otras cosas que irían bien:
 - Un fantasma con tu mejor intento, corriendo a la vez.
 - Mando de consola (la Gamepad API son unas 30 líneas).
 - Un editor de niveles dentro del propio juego.
-- Plataformas que se mueven y bloques que desaparecen al pisarlos.

@@ -61,12 +61,25 @@ kbd{
 .btn:hover{background:#24242b;color:var(--txt)}
 .btn:focus-visible{outline:2px solid var(--acento);outline-offset:2px}
 
+.h-plat .h-v{color:#ffd43b}
+.h-plat .h-v::before{content:'●';margin-right:5px;font-size:.8em;vertical-align:1px}
+
 /* ---------- pantalla ---------- */
 .pantalla{
   position:relative;border:1px solid var(--borde);border-radius:12px;overflow:hidden;
   background:#0b0b0d;box-shadow:0 20px 60px rgba(0,0,0,.5);
 }
 #lienzo{display:block;width:100%;height:clamp(340px,62vh,620px)}
+.pantalla:fullscreen{border:0;border-radius:0;height:100%}
+.pantalla:fullscreen #lienzo{height:100vh}
+
+/* respaldo cuando el navegador no deja usar la pantalla completa nativa */
+body.inmersivo{overflow:hidden}
+body.inmersivo .pantalla{
+  position:fixed;inset:0;z-index:50;border:0;border-radius:0;box-shadow:none;
+}
+body.inmersivo #lienzo{height:100vh}
+body.inmersivo .notas,body.inmersivo .pista{display:none}
 
 .capa{
   position:absolute;inset:0;display:grid;place-items:center;padding:20px;
@@ -102,6 +115,7 @@ kbd{
 .niv.hecho{color:var(--txt)}
 .niv.hecho .niv-t::before{content:'✓ ';color:var(--zc);font-weight:800}
 .niv-t{font-size:.78rem;font-weight:620}
+.niv-t .pl{font-style:normal;color:#ffd43b;margin-left:5px;font-size:.72em;vertical-align:1px}
 .niv-m{font-size:.66rem;color:var(--txt-3);font-variant-numeric:tabular-nums}
 
 .h-zona{
@@ -118,9 +132,11 @@ kbd{
 .btn-grande:focus-visible{outline:2px solid #fff;outline-offset:2px}
 
 .caja-fin{max-width:380px}
-.fin-datos{display:flex;justify-content:center;gap:36px;margin:16px 0 20px}
+.fin-datos{display:flex;justify-content:center;gap:28px;margin:16px 0 20px}
 .fin-datos span{display:flex;flex-direction:column;font-size:.64rem;text-transform:uppercase;letter-spacing:.08em;color:var(--txt-3);font-weight:700}
 .fin-datos b{font-size:1.7rem;font-weight:780;color:var(--txt);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.fin-datos b.si{color:#ffd43b}
+.fin-datos b.no{color:var(--txt-3)}
 
 .pista{
   font-size:.74rem;color:var(--txt-3);text-align:center;padding:9px 4px 16px;
