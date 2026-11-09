@@ -76,25 +76,30 @@ if (d > largoCuerda) {
 }
 ```
 
-## El comprobador de niveles
+## El comprobador de niveles (y el fallo que tuvo)
 
-Un nivel que no se puede terminar es el peor fallo posible, y se escapa a
-simple vista. `comprobarNivel()` hace una inundación por el mapa con un modelo
-de movimiento **más torpe que el personaje real**: salta 3 casillas (el real
-llega a 3,38), avanza 4 (el real 5,44), el dash recorre 2 (el real 2,26). Si
-con ese modelo se llega a la salida, con el personaje de verdad seguro que
-también.
+Un nivel que no se puede terminar es el peor fallo posible y se escapa mirando
+el mapa. `comprobarNivel()` recorre el nivel con un personaje **más torpe que
+el real**: salta 3 casillas (el real llega a 3,38), avanza 4 (el real 5,5) y el
+dash recorre 2 (el real 2,26). Si con eso se llega a la salida, con el
+personaje de verdad seguro que también. Solo cuenta con los movimientos
+desbloqueados en ese nivel.
 
-Y solo cuenta con los movimientos que ese nivel tiene desbloqueados, así que no
-se puede colar un nivel 1 que en realidad necesite el dash.
+**La primera versión estaba mal.** No llevaba la cuenta de si quedaba dash, así
+que daba por bueno encadenar dashes infinitos en el aire. Con eso aprobó un
+nivel 2 que era imposible de pasar. Ahora el estado de la búsqueda incluye si
+la carga está gastada, y el dash se recarga solo al pisar suelo, tocar pared o
+coger un cristal.
 
-Para pasarlo, abre la consola del navegador y escribe:
+Para pasarlo, en la consola del navegador:
 
 ```js
-NIVELES.map(d => comprobarNivel(prepararNivel(d)))
+comprobarTodos()
 ```
 
-Los cinco niveles lo pasan.
+Además hay un bot que **juega los niveles de verdad** con la física real. Los
+tres primeros los termina sin morir. Los dos últimos necesitan gancho y planeo
+y el bot no sabe usarlos: de esos solo está la comprobación del recorrido.
 
 ## Editar los niveles
 

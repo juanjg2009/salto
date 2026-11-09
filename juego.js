@@ -113,7 +113,8 @@ function nuevoJugador(spawn) {
     pared: 0, tParedCoyote: 0, paredUltima: 0, bloqueo: 0,
     planeando: false, tCayendo: 0,
     gancho: null, largoCuerda: 0,
-    estira: 1, aplasta: 1
+    estira: 1, aplasta: 1,
+    faseAndar: 0
   };
 }
 
@@ -367,6 +368,9 @@ function actualizarJugador(dt) {
     for (let i = 0; i < 10; i++)
       polvo(p.x, p.y, -p.dashDx * (60 + Math.random() * 140), -p.dashDy * (60 + Math.random() * 140), 2 + Math.random() * 2);
   }
+
+  /* la zancada avanza con la distancia recorrida, no con el reloj */
+  if (p.suelo) p.faseAndar += Math.abs(p.vx) * dt * 0.075;
 
   /* ---------- deformación elástica ---------- */
   p.aplasta += (1 - p.aplasta) * Math.min(1, 14 * dt);
@@ -645,18 +649,31 @@ function dibujar() {
     }
   }
 
-  /* --- pinchos --- */
+  /* --- pinchos: apuntan hacia fuera de la roca donde se clavan --- */
   g.fillStyle = COL.pincho;
   for (let y = cy0; y <= cy1; y++) {
     for (let x = cx0; x <= cx1; x++) {
       if (!N.pincho[y][x]) continue;
       const px = x * TILE, py = y * TILE;
-      const n = 3, an = TILE / n;
+      let dir = 'arriba';
+      if (solidoEn(x, y + 1)) dir = 'arriba';
+      else if (solidoEn(x, y - 1)) dir = 'abajo';
+      else if (solidoEn(x - 1, y)) dir = 'derecha';
+      else if (solidoEn(x + 1, y)) dir = 'izquierda';
+
+      const n = 3, paso = TILE / n, largo = TILE * 0.62;
       for (let i = 0; i < n; i++) {
+        const c = i * paso, c2 = (i + 1) * paso, m = c + paso / 2;
         g.beginPath();
-        g.moveTo(px + i * an, py + TILE);
-        g.lineTo(px + i * an + an / 2, py + TILE * 0.38);
-        g.lineTo(px + (i + 1) * an, py + TILE);
+        if (dir === 'arriba') {
+          g.moveTo(px + c, py + TILE); g.lineTo(px + m, py + TILE - largo); g.lineTo(px + c2, py + TILE);
+        } else if (dir === 'abajo') {
+          g.moveTo(px + c, py); g.lineTo(px + m, py + largo); g.lineTo(px + c2, py);
+        } else if (dir === 'derecha') {
+          g.moveTo(px, py + c); g.lineTo(px + largo, py + m); g.lineTo(px, py + c2);
+        } else {
+          g.moveTo(px + TILE, py + c); g.lineTo(px + TILE - largo, py + m); g.lineTo(px + TILE, py + c2);
+        }
         g.closePath(); g.fill();
       }
     }
@@ -729,17 +746,45 @@ function dibujar() {
     }
 
     const tieneDash = p.dashes > 0;
+    const color = tieneDash ? COL.acento : COL.gastado;
+
+    /* --- patas ---
+       Se mueven con la distancia recorrida, no con el reloj: así
+       nunca parece que patine. En el aire se encogen y se recogen
+       hacia atrás; con el dash salen disparadas hacia atrás. */
+    const cuerpoAlto = al * 0.70;
+    const yCadera = -al / 2 + cuerpoAlto;
+    const pierna = al - cuerpoAlto;
+    let pies;
+    if (p.dashT > 0) {
+      pies = [[-p.dashDx * 5 - 3, 0.45], [-p.dashDx * 7 + 1, 0.3]];
+    } else if (!p.suelo) {
+      pies = [[-p.mira * 1 - 3.5, 0.45], [-p.mira * 4 + 3.5, 0.15]];
+    } else if (Math.abs(p.vx) > 14) {
+      const f = p.faseAndar;
+      pies = [[Math.cos(f) * 4 - 1.5, Math.max(0, Math.sin(f)) * 0.8],
+              [Math.cos(f + Math.PI) * 4 + 1.5, Math.max(0, Math.sin(f + Math.PI)) * 0.8]];
+    } else {
+      pies = [[-3.5, 0], [3.5, 0]];
+    }
+    g.fillStyle = color;
+    for (const [dx, lev] of pies) {
+      const h = Math.max(2, pierna * (1 - lev * 0.55));
+      g.fillRect(dx - 2, yCadera, 4, h);
+    }
+
+    /* --- cuerpo --- */
     g.fillStyle = tieneDash ? COL.acento : 'transparent';
-    g.strokeStyle = tieneDash ? COL.acento : COL.gastado;
+    g.strokeStyle = color;
     g.lineWidth = 2.5;
-    redondeado(g, -an / 2, -al / 2, an, al, 5);
+    redondeado(g, -an / 2, -al / 2, an, cuerpoAlto, 5);
     if (tieneDash) g.fill(); else g.stroke();
 
     // ojos: dicen hacia dónde miras, y es lo que lo hace "alguien"
-    g.fillStyle = COL.fondo;
+    g.fillStyle = tieneDash ? COL.fondo : COL.gastado;
     const ex = p.mira * 2.5;
-    g.fillRect(ex - 4.5, -al / 6, 2.5, 4);
-    g.fillRect(ex + 2, -al / 6, 2.5, 4);
+    g.fillRect(ex - 4.5, -al / 2 + cuerpoAlto * 0.34, 2.5, 4);
+    g.fillRect(ex + 2, -al / 2 + cuerpoAlto * 0.34, 2.5, 4);
     g.restore();
   }
 
