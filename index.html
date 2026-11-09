@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Salto — plataformas de precisión</title>
+<meta name="description" content="Plataformas 2D de precisión con dash, salto de pared, planeo y gancho. Cinco niveles. Todo generado por código.">
+<link rel="stylesheet" href="styles.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='28' y='22' width='44' height='56' rx='10' fill='%23ff5a3c'/></svg>">
+</head>
+<body>
+
+<div class="marco">
+
+  <header class="hud">
+    <div class="h-izq">
+      <span class="h-titulo" id="hNivel">1/5</span>
+      <div class="habilidades" id="habilidades"></div>
+    </div>
+    <div class="h-der">
+      <div class="h-dato"><span class="h-l">Tiempo</span><span class="h-v" id="hTiempo">0:00.00</span></div>
+      <div class="h-dato"><span class="h-l">Muertes</span><span class="h-v" id="hMuertes">0</span></div>
+      <div class="h-dato"><span class="h-l">Récord</span><span class="h-v" id="hMejor">—</span></div>
+      <button type="button" class="btn" id="btnReinicio" title="También con la tecla R">↺ Reiniciar</button>
+      <button type="button" class="btn" id="btnMenu" title="También con Escape">Niveles</button>
+    </div>
+  </header>
+
+  <div class="pantalla">
+    <canvas id="lienzo" aria-label="Juego de plataformas. Mueve el personaje con las flechas y salta con espacio."></canvas>
+
+    <!-- menú -->
+    <div class="capa" id="menu" hidden>
+      <div class="caja">
+        <h1>Salto</h1>
+        <p class="lema">Cinco niveles. Seis formas de moverte. Vas a morir mucho, y eso está bien: reapareces en un tercio de segundo.</p>
+
+        <div class="controles">
+          <div><kbd>←</kbd><kbd>→</kbd><span>moverte</span></div>
+          <div><kbd>Espacio</kbd><span>saltar · suéltalo antes para saltar menos · mantenlo al caer para planear</span></div>
+          <div><kbd>X</kbd><span>dash hacia donde estés pulsando</span></div>
+          <div><kbd>C</kbd><span>gancho (mantén pulsado) · <kbd>↑</kbd><kbd>↓</kbd> recogen y sueltan cuerda</span></div>
+          <div><kbd>R</kbd><span>reiniciar · <kbd>Esc</kbd> menú</span></div>
+        </div>
+
+        <div class="lista-niveles" id="listaNiveles"></div>
+        <button type="button" class="btn-grande" id="btnEmpezar">Empezar por el principio</button>
+      </div>
+    </div>
+
+    <!-- nivel superado -->
+    <div class="capa" id="fin" hidden>
+      <div class="caja caja-fin">
+        <h2 id="finTitulo">¡Nivel superado!</h2>
+        <div class="fin-datos" id="finDatos"></div>
+        <button type="button" class="btn-grande" id="btnSiguiente">Siguiente nivel →</button>
+      </div>
+    </div>
+  </div>
+
+  <p class="pista" id="pista"></p>
+
+</div>
+
+<section class="notas">
+  <div class="n-col">
+    <h3>Por qué se siente así</h3>
+    <p>Nada de esto es física real. Son trampas para que el personaje responda como tú esperas, no como manda la gravedad.</p>
+    <p><b>Caes más rápido de lo que subes.</b> Gravedad de subida 1500, de bajada 2150. Es lo que da peso al salto.</p>
+    <p><b>Cerca del punto más alto la gravedad baja.</b> Flotas un instante y te da tiempo a leer dónde vas a caer.</p>
+    <p><b>Frenas más rápido de lo que aceleras, y giras el doble de rápido.</b> Por eso el personaje se siente firme y no patina.</p>
+  </div>
+  <div class="n-col">
+    <h3>Los perdones invisibles</h3>
+    <p><b>Tiempo del coyote:</b> 0,1 s después de salirte del borde todavía puedes saltar. Nadie lo nota; todos lo echan de menos cuando falta.</p>
+    <p><b>Memoria del botón:</b> si pulsas saltar hasta 0,12 s antes de aterrizar, el salto sale igual al tocar suelo.</p>
+    <p><b>Perdón en las esquinas:</b> si al subir te comes un pico por 8 píxeles o menos, el juego te empuja de lado en vez de pararte en seco.</p>
+    <p>Son tres trampas que el jugador nunca ve, y las tres son la diferencia entre un plataformas que da gusto y uno que da rabia.</p>
+  </div>
+  <div class="n-col">
+    <h3>El jugo</h3>
+    <p><b>Imagen congelada:</b> 50 milisegundos de tiempo parado al lanzar un dash, 35 al caer fuerte. Diez líneas de código, el triple de impacto.</p>
+    <p><b>Se estira y se aplasta:</b> alto al saltar, ancho al aterrizar. Es dibujo animado de los años treinta y funciona igual de bien.</p>
+    <p><b>La cámara mira hacia donde vas</b> y te sigue con retraso, en vez de ir clavada encima.</p>
+    <p>Y el sonido está generado aquí mismo: ni un fichero de audio en la carpeta.</p>
+  </div>
+</section>
+
+<script src="niveles.js"></script>
+<script src="juego.js"></script>
+</body>
+</html>
