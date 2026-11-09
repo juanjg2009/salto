@@ -161,6 +161,30 @@ A   bloque intermitente    B   el del turno contrario
 Las filas se rellenan solas, así que no tienen que medir todas lo mismo.
 `habilidades` decide qué sabe hacer el personaje en ese nivel.
 
+## Trabajar desde otro ordenador
+
+El juego vive en **github.com/juanjg2009/salto** y esta carpeta es un clon de
+ese repositorio. En cualquier otro ordenador:
+
+```
+git clone https://github.com/juanjg2009/salto.git
+```
+
+Se edita igual, y al terminar:
+
+```
+git add -A
+git commit -m "lo que hayas cambiado"
+git push
+```
+
+Eso es todo: GitHub Pages republica **https://juanjg2009.github.io/salto/**
+en un minuto o dos. No hay que tocar ningún ajuste ni dejar ningún ordenador
+encendido.
+
+Antes de ponerte a trabajar, `git pull` para traerte lo que hicieras en la
+otra máquina.
+
 ## Pantalla completa
 
 El botón pide la pantalla completa del navegador. Si el navegador se niega
